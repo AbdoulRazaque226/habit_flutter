@@ -1,5 +1,3 @@
-# .github/workflows/ci.yml
-
 name: CI
 
 on:
@@ -12,13 +10,20 @@ jobs:
   analyze_and_test:
     name: Lint & Test
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4.2.2
 
-      - uses: subosito/flutter-action@v2.21.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2.21.0
         with:
-          flutter-version: '3.35.0'
-          channel: 'stable'
+          flutter-version: '3.44.5'
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
 
       - name: Install dependencies
         run: flutter pub get
@@ -27,10 +32,10 @@ jobs:
         run: flutter gen-l10n
 
       - name: Generate Hive adapters
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
+        run: dart format --output=none --set-exit-if-changed lib test
 
       - name: Analyze
         run: flutter analyze
@@ -48,20 +53,32 @@ jobs:
     name: Build APK
     runs-on: ubuntu-latest
     needs: analyze_and_test
+
     steps:
-      - uses: actions/checkout@v4.2.2
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
 
-      - uses: subosito/flutter-action@v2.21.0
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2.21.0
         with:
-          flutter-version: '3.35.0'
-          channel: 'stable'
+          flutter-version: '3.44.5'
+          channel: stable
+          cache: true
 
-      - run: flutter pub get
-      - run: flutter gen-l10n
-      - run: flutter pub run build_runner build --delete-conflicting-outputs
-      - run: flutter build apk --release
+      - name: Install dependencies
+        run: flutter pub get
 
-      - uses: actions/upload-artifact@v3
+      - name: Generate localization files
+        run: flutter gen-l10n
+
+      - name: Generate Hive adapters
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
