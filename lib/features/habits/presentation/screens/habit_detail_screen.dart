@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_final/l10n/app_localizations.dart';
-import '../../domain/entities/habit.dart';
 import '../providers/habit_providers.dart';
 
 class HabitDetailScreen extends ConsumerWidget {
